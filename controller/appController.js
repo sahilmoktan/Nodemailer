@@ -2,45 +2,32 @@ const nodemailer = require("nodemailer");
 const Mailgen = require("mailgen");
 const { EMAIL, PASSWORD } = require("../env.js");
 
-//send mail from testing account
+//send mail from when user signs up
 const signup = async (req, res) => {
-  //testing account
-  let testAccount = await nodemailer.createTestAccount();
+  const { userEmail } = req.body;
 
-  // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false, // true for 465, false for other ports
+    service: "gmail",
     auth: {
-      user: testAccount.user, // generated ethereal user
-      pass: testAccount.pass, // generated ethereal password
+      user: "moktanshail9@gmail.com",
+      pass: "xgwtqnawsjxdrsmy",
     },
   });
 
-  // send mail with defined transport object
-  let message = {
-    from: '"Fred Foo 👻" <foo@example.com>', // sender address
-    to: "bar@example.com, baz@example.com", // list of receivers
-    subject: "Hello ✔", // Subject line
-    text: "Hello world?", // plain text body
-    html: "<b>Hello world?</b>", // html body
+  const mailoptions = {
+    from: "moktanshail9@gmail.com",
+    to: userEmail,
+    subject: "nodemailer test 4",
+    text: "User signed in",
   };
 
-  transporter
-    .sendMail(message)
-    .then((info) => {
-      res.status(201).json({
-        msg: "you should receive an email",
-        info: info.messageId,
-        preview: nodemailer.getTestMessageUrl(info),
-      });
-    })
-    .catch((error) => {
-      res.status(500).json({ error });
-    });
-
-  //   res.status(201).json("Signup succesfully ...!");
+  transporter.sendMail(mailoptions, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent:" + info.response);
+    }
+  });
 };
 
 //send mail from real gmail acccount
