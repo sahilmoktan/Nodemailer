@@ -1,4 +1,8 @@
 const nodemailer = require("nodemailer");
+const Mailgen = require("mailgen");
+const { EMAIL, PASSWORD } = require("../env.js");
+
+//send mail from testing account
 const signup = async (req, res) => {
   //testing account
   let testAccount = await nodemailer.createTestAccount();
@@ -26,13 +30,11 @@ const signup = async (req, res) => {
   transporter
     .sendMail(message)
     .then((info) => {
-      res
-        .status(201)
-        .json({
-          msg: "you should receive an email",
-          info: info.messageId,
-          preview: nodemailer.getTestMessageUrl(info),
-        });
+      res.status(201).json({
+        msg: "you should receive an email",
+        info: info.messageId,
+        preview: nodemailer.getTestMessageUrl(info),
+      });
     })
     .catch((error) => {
       res.status(500).json({ error });
@@ -41,9 +43,61 @@ const signup = async (req, res) => {
   //   res.status(201).json("Signup succesfully ...!");
 };
 
+//send mail from real gmail acccount
 const getbill = (req, res) => {
-  res.status(201).json("getbill successfully ...!");
+  const { userEmail } = req.body;
+  let config = {
+    service: "gmail",
+    auth: {
+      user: "EMAIL",
+      pass: "PASSWORD",
+    },
+  };
+  let transporter = nodemailer.createTransport(config);
+
+  let MailGenerator = new Mailgen({
+    them: "default",
+    product: {
+      name: "mailgen",
+      link: "https://mailgen.js/",
+    },
+  });
+  let response = {
+    body: {
+      name: "sahil",
+      intro: "your bill has arrived!",
+      table: {
+        data: [
+          {
+            item: "nodemailser stack book",
+            descriptin: "a backend aplickation",
+            price: "rs 150",
+          },
+        ],
+      },
+      outro: "looking forward to do more business",
+    },
+  };
+  let mail = MailGenerator.generate(response);
+  let message = {
+    from: EMAIL,
+    to: userEmail,
+    subject: "place order",
+    html: mail,
+  };
+  transporter
+    .sendMail(message)
+    .then(() => {
+      return res.status(201).json({
+        msg: "you should receive an email",
+      });
+    })
+    .catch((error) => {
+      return res.status(500).json({ error });
+    });
+  //   res.status(201).json("getbill successfully ...!");
 };
+
 module.exports = {
   signup,
   getbill,
